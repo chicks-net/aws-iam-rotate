@@ -2,36 +2,37 @@
 """rotate your AWS IAM key"""
 # pipenv run python s3ver_make.py <usermap>
 
+import configparser
 import os
-import random # ??
+#import pprint # pylint: disable=unused-import
 import re
 from shutil import copy2
-import string
 import sys
-#import time
-import configparser
-import json
 import boto3 # pylint: disable=import-error
-import pprint # pylint: disable=unused-import
 
 def credentials_backup_filename():
+    """filename for credientials backup"""
     mainfile = credentials_filename()
     return mainfile + ".bak"
 
 def credentials_filename():
+    """filename for credientials primary"""
     home = os.environ.get('HOME')
     filename = "%s/.aws/credentials" % (home)
     return filename
 
 def backup_credentials():
+    """perform backup of credentials file"""
     copy2(credentials_filename(), credentials_backup_filename())
 
 def read_credentials():
+    """read the credentials file using configparser"""
     creds = configparser.ConfigParser()
     creds.read(credentials_filename())
     return creds
 
 def rotate_key():
+    """rotate the user's IAM key"""
     iam = boto3.client('iam') # TODO: try resource for this stuff
     iamr = boto3.resource('iam')
 
@@ -47,7 +48,7 @@ def rotate_key():
 
         tags_print = re.sub(r' $', '', tags_print)
 
-    print("Welcome, %s. (%s)" % (user,tags_print))
+    print("Welcome, %s. (%s)" % (user, tags_print))
 
     # get current credentials from file
     creds_file = credentials_filename()
@@ -61,7 +62,7 @@ def rotate_key():
     # get current key from IAM
     iam_keys_resp = iam.list_access_keys(UserName=user)
     iam_keys = iam_keys_resp['AccessKeyMetadata']
-    update_profile = None;
+    update_profile = None
     if not iam_keys:
         print("IAM user %s has no keys!  There is nothing to do here. :)" % (user))
         return # TODO: just create a new key
