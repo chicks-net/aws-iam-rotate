@@ -14,3 +14,8 @@ It won't replace your existing IAM key until it verifies that the new key works.
 You need [pipenv](https://docs.pipenv.org/) first.  Then do `pipenv sync` to get the venv created.
 
 Then you can use the wrapper script `rotateiam` to take care of invoking pipenv and running the operation.
+
+## Plans
+
+* move from boto3 clients to resources as much as possible
+* issue template
