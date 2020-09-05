@@ -91,6 +91,8 @@ def rotate_key():
         print("Not handling more than one key yet either. :)")
         return
 
+    raise Exception("avoiding making a new key until the resource stuff is working")
+
     backup_credentials()
 
     access_key_pair = iamuser.create_access_key_pair()
