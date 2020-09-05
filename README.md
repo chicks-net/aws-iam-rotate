@@ -22,6 +22,13 @@ key in your `~/.aws/credentials` with a fresh key.
 ./rotate-iam
 ```
 
+It respects your `AWS_PROFILE` [environment variable](https://en.wikipedia.org/wiki/Environment_variable)
+to find which key to update.
+
+```
+AWS_PROFILE=foo ./rotate-iam
+```
+
 ## Plans
 
 * move from boto3 clients to resources as much as possible
