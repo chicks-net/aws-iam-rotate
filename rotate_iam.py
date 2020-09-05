@@ -31,42 +31,31 @@ def read_credentials():
     creds.read(credentials_filename())
     return creds
 
-def rotate_key():
-    """rotate the user's IAM key"""
-    iam = boto3.client('iam') # TODO: try resource for this stuff
-    iamr = boto3.resource('iam')
-
-    user = iamr.CurrentUser().user_name
-    iamuser = iamr.User(user)
-
-    # tags
-    user_resp = iam.get_user(UserName=user)['User']
+def print_tags(iamuser):
+    """return string of tags for user"""
     tags_print = ""
-    if 'Tags' in user_resp:
-        for tagrec in user_resp['Tags']:
-            tags_print += "%s=%s " % (tagrec['Key'], tagrec['Value'])
+    for tagrec in iamuser.tags:
+        tags_print += "%s=%s " % (tagrec['Key'], tagrec['Value'])
 
-        tags_print = re.sub(r' $', '', tags_print)
+    tags_print = re.sub(r' $', '', tags_print)
+    return tags_print
 
-    print("Welcome, %s. (%s)" % (user, tags_print))
-
-    # get current credentials from file
-    creds_file = credentials_filename()
-    creds = read_credentials()
-    creds_count = len(creds.sections())
-    print("You have %d creds in `%s`." % (creds_count, creds_file))
-    profiles = {} # map key ids to their corresponding profile
-    for profile in creds.sections():
-        profiles[creds[profile]["aws_access_key_id"]] = profile
+def get_keylist(user):
+    """get list of IAM keys for user"""
+    iam = boto3.client('iam') # I tried boto resources for this, but I couldn't get it to work.
 
     # get current key from IAM
     iam_keys_resp = iam.list_access_keys(UserName=user)
     iam_keys = iam_keys_resp['AccessKeyMetadata']
+
+    return iam_keys
+
+def print_keylist(user, profiles):
+    """print list of IAM keys for user with last access details"""
+    iam = boto3.client('iam') # I tried boto resources for this, but I couldn't get it to work.
+    iam_keys = get_keylist(user)
     update_profile = None
-    if not iam_keys:
-        print("IAM user %s has no keys!  There is nothing to do here. :)" % (user))
-        return # TODO: just create a new key
-    else:
+    if iam_keys:
         print("You have %d key(s) in IAM for %s:" % (len(iam_keys), user))
         for k in iam_keys:
             # when was it last used?
@@ -86,12 +75,37 @@ def rotate_key():
             print("- %s key %s created %s used %s profile %s" % (
                 k['Status'], k['AccessKeyId'], k['CreateDate'], last_used, prof
                 ))
+        return update_profile
+    else:
+        raise Exception("IAM user %s has no keys!  There is nothing to do here. :)" % (user))
 
-    if len(iam_keys) > 1:
+def rotate_key():
+    """rotate the user's IAM key"""
+    iamr = boto3.resource('iam')
+
+    user = iamr.CurrentUser().user_name
+    iamuser = iamr.User(user)
+
+    print("Welcome, %s. (%s)" % (user, print_tags(iamuser)))
+
+    # get current credentials from file
+    creds = read_credentials()
+    creds_count = len(creds.sections())
+    print("You have %d creds in `%s`." % (creds_count, credentials_filename()))
+    profiles = {} # map key ids to their corresponding profile
+    for profile in creds.sections():
+        profiles[creds[profile]["aws_access_key_id"]] = profile
+
+    iam_keys = get_keylist(user)
+    if not iam_keys:
+        print("IAM user %s has no keys!  There is nothing to do here. :)" % (user))
+        return
+    elif len(iam_keys) > 1:
+        print_keylist(user, profiles)
         print("Not handling more than one key yet either. :)")
         return
-
-    raise Exception("avoiding making a new key until the resource stuff is working")
+    else:
+        update_profile = print_keylist(user, profiles)
 
     backup_credentials()
 
