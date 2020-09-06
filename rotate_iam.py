@@ -67,14 +67,15 @@ def print_keylist(user, profiles):
             else:
                 last_used = "never"
 
+            # can we match it to a profile from your creds file?
             prof = "none"
             if k['AccessKeyId'] in profiles:
                 prof = profiles[k['AccessKeyId']]
                 update_profile = prof
 
-            print("- %s key %s created %s used %s profile %s" % (
-                k['Status'], k['AccessKeyId'], k['CreateDate'], last_used, prof
-                ))
+            print("    - %s key %s matches profile %s" % (k['Status'], k['AccessKeyId'], prof))
+            print("\t(created %s used %s)" % (k['CreateDate'], last_used))
+
         return update_profile
     else:
         raise Exception("IAM user %s has no keys!  There is nothing to do here. :)" % (user))
@@ -82,20 +83,21 @@ def print_keylist(user, profiles):
 def rotate_key():
     """rotate the user's IAM key"""
     iamr = boto3.resource('iam')
-
     user = iamr.CurrentUser().user_name
     iamuser = iamr.User(user)
-
     print("Welcome, %s. (%s)" % (user, print_tags(iamuser)))
 
     # get current credentials from file
     creds = read_credentials()
     creds_count = len(creds.sections())
     print("You have %d creds in `%s`." % (creds_count, credentials_filename()))
-    profiles = {} # map key ids to their corresponding profile
+
+    # map key ids to their corresponding profile
+    profiles = {}
     for profile in creds.sections():
         profiles[creds[profile]["aws_access_key_id"]] = profile
 
+    # how many keys there are determines what we can do
     iam_keys = get_keylist(user)
     if not iam_keys:
         print("IAM user %s has no keys!  There is nothing to do here. :)" % (user))
@@ -107,7 +109,7 @@ def rotate_key():
     else:
         update_profile = print_keylist(user, profiles)
 
-    backup_credentials()
+    backup_credentials() # the file
 
     access_key_pair = iamuser.create_access_key_pair()
 
