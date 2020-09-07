@@ -109,11 +109,24 @@ def rotate_key():
     else:
         update_profile = print_keylist(user, profiles)
 
+    old_keyid = creds[update_profile]["aws_access_key_id"]
+    oldkey_resource = iamr.AccessKey(user, old_keyid)
     backup_credentials() # the file
 
+    # create new key
     access_key_pair = iamuser.create_access_key_pair()
 
-    # TODO: validate keypair before writing to disk
+    # validate keypair before writing to disk
+    #keypair_resource = iamr.AccessKeyPair(user, access_key_pair.id, access_key_pair.secret)
+
+    # might break considering https://github.com/boto/boto3/issues/2133
+    #if keypair_resource.status == "Active":
+    #    # How can I better validate the keypair?
+    #    print("Your key looks ok.")
+    #else:
+    #    print("Your key looks problematic: %s." % (keypair_resource.status))
+    #    print("Your old key should still work since we didn't deactivate it.")
+    #    raise Exception("This looks bad to write to disk so original creds file is left intact.")
 
     # rewrite credentials file with new credentials
     creds[update_profile]["aws_access_key_id"] = access_key_pair.id
@@ -125,6 +138,7 @@ def rotate_key():
     print("%s rewritten" % (credentials_filename()))
 
     # TODO: deactivate old key
+    #oldkey_resource.deactivate()
 
 if __name__ == "__main__":
     rotate_key()
