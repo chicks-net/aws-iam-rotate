@@ -31,7 +31,7 @@ AWS_PROFILE=foo ./rotate-iam
 
 ## Plans
 
-* move from boto3 clients to resources as much as possible
-* issue template
 * validate keypair before writing to disk
 * deactivate old key
+* issue template
+* github actions
