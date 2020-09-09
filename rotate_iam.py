@@ -80,6 +80,28 @@ def print_keylist(user, profiles):
     else:
         raise Exception("IAM user %s has no keys!  There is nothing to do here. :)" % (user))
 
+def validate_keypair(username,keypair):
+    """check keypair to make sure it works"""
+    #keypair_resource = iamr.AccessKeyPair(user, access_key_pair.id, access_key_pair.secret)
+
+    # might break considering https://github.com/boto/boto3/issues/2133
+    #if keypair_resource.status == "Active":
+    #    # How can I better validate the keypair?
+    #    print("Your key looks ok.")
+    #else:
+    #    print("Your key looks problematic: %s." % (keypair_resource.status))
+    #    print("Your old key should still work since we didn't deactivate it.")
+    #    raise Exception("This looks bad to write to disk so original creds file is left intact.")
+
+    key_resource = iamr.AccessKey(username, keypair.id)
+    if key_resource.status == "Active":
+        print("Your key looks ok.")
+    else:
+        print("Your key looks problematic: %s." % (key_resource.status))
+        print("Your old key should still work since we didn't deactivate it.")
+
+    # next try: aws sts get-access-key-info --access-key-id $keyid
+
 def rotate_key():
     """rotate the user's IAM key"""
     iamr = boto3.resource('iam')
@@ -117,16 +139,7 @@ def rotate_key():
     access_key_pair = iamuser.create_access_key_pair()
 
     # validate keypair before writing to disk
-    #keypair_resource = iamr.AccessKeyPair(user, access_key_pair.id, access_key_pair.secret)
-
-    # might break considering https://github.com/boto/boto3/issues/2133
-    #if keypair_resource.status == "Active":
-    #    # How can I better validate the keypair?
-    #    print("Your key looks ok.")
-    #else:
-    #    print("Your key looks problematic: %s." % (keypair_resource.status))
-    #    print("Your old key should still work since we didn't deactivate it.")
-    #    raise Exception("This looks bad to write to disk so original creds file is left intact.")
+    validate_keypair(user,access_key_pair)
 
     # rewrite credentials file with new credentials
     creds[update_profile]["aws_access_key_id"] = access_key_pair.id
