@@ -1,5 +1,6 @@
 # aws-iam-rotate
 
+[![OpenSSF Scorecard](https://api.scorecard.dev/projects/github.com/chicks-net/aws-iam-rotate/badge)](https://scorecard.dev/viewer/?uri=github.com/chicks-net/aws-iam-rotate)
 [![Open Source Love png2](https://badges.frapsoft.com/os/v2/open-source.png?v=103)](https://github.com/ellerbrock/open-source-badges/)
 [![GPLv2 license](https://img.shields.io/badge/License-GPLv2-blue.svg)](https://github.com/chicks-net/aws-iam-rotate/blob/master/LICENSE)
 [![Maintenance](https://img.shields.io/badge/Maintained%3F-yes-green.svg)](https://github.com/chicks-net/aws-iam-rotate/graphs/commit-activity)
