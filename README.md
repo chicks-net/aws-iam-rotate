@@ -35,4 +35,4 @@ AWS_PROFILE=foo ./rotate-iam
 * validate keypair before writing to disk
 * deactivate old key
 * issue template
-* github actions
+* GitHub actions
