@@ -1,9 +1,4 @@
 ---
-###########################
-###########################
-## Linter GitHub Actions ##
-###########################
-###########################
 name: Lint Code Base
 
 #
@@ -11,45 +6,30 @@ name: Lint Code Base
 # https://help.github.com/en/articles/workflow-syntax-for-github-actions
 #
 
-#############################
-# Start the job on all push #
-#############################
 on:
-  push:
-    branches-ignore: [master]
-    # Remove the line above to run when pushing to master
   pull_request:
-    branches: [master]
+    branches: [main]
 
-###############
-# Set the Job #
-###############
+permissions:
+  contents: read
+  packages: read
+  statuses: write
+
 jobs:
-  build:
-    # Name the Job
+  super-linter:
     name: Lint Code Base
-    # Set the agent to run on
     runs-on: ubuntu-latest
 
-    ##################
-    # Load all steps #
-    ##################
     steps:
-      ##########################
-      # Checkout the code base #
-      ##########################
       - name: Checkout Code
-        uses: actions/checkout@v2
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
         with:
-          # Full git history is needed to get a proper list of changed files within `super-linter`
           fetch-depth: 0
+          persist-credentials: false
 
-      ################################
-      # Run Linter against code base #
-      ################################
       - name: Lint Code Base
-        uses: github/super-linter@v4
+        uses: super-linter/super-linter@4ce20838b8ab83717e78138c5b3a1407148e0918 # v8.7.0
         env:
-          VALIDATE_ALL_CODEBASE: false
-          DEFAULT_BRANCH: master
+          validate_all_codebase: false
+          default_branch: main
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
